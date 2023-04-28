@@ -8,45 +8,17 @@ const COLS: usize = 50;
 const FIRE: char = '🔥';
 const WOOD: char = '🪵';
 const BURNED_OUT: char = ' ';
-const FIREWORK: char = '🎆';
+const _FIREWORK: char = '🎆';
 
 const DELAY_MS: u64 = 300;
 
 fn main() {
     let mut forest = Forest::all_wood();
 
-    forest.init();
-    forest.display();
-
-    while forest.pixels_currently_on_fire().next().is_some() {
-        forest.step();
-        forest.display();
-    }
-
-    fireworks();
-}
-
-fn clear() {
-    // println!();
-    // println!();
-    // println!();
-    let esc = 27 as char;
-    print!("{esc}[2J{esc}[1;1H");
-    print!("{esc}[2J");
-}
-
-fn fireworks() {
-    clear();
-    for _ in 0..ROWS / 2 {
-        println!();
-    }
-    println!(
-        "{}{}",
-        ' '.to_string().repeat(COLS),
-        FIREWORK.to_string().repeat(5)
-    );
-    for _ in 0..ROWS / 2 {
-        println!();
+    // The circle of life... ☯️
+    loop {
+        forest.burn();
+        forest.grow();
     }
 }
 
@@ -62,7 +34,30 @@ impl Forest {
         Forest { pixels }
     }
 
-    fn init(&mut self) {
+    /// Return the number of steps it took to burn down the whole forest.
+    ///
+    /// Note that there may be a few trees that survived.
+    fn burn(&mut self) -> usize {
+        self.spark();
+        self.display();
+
+        for i in 0.. {
+            if self.pixels_currently_on_fire().next().is_none() {
+                return i;
+            }
+
+            self.burn_one_step();
+            self.display();
+        }
+
+        unreachable!();
+    }
+
+    fn grow(&mut self, time_steps: usize) {
+        todo!()
+    }
+
+    fn spark(&mut self) {
         // randomly choose a place to "light"
         let mut rng = rand::thread_rng();
         let r: usize = rng.gen_range(0..ROWS);
@@ -84,7 +79,7 @@ impl Forest {
         thread::sleep(Duration::from_millis(DELAY_MS));
     }
 
-    fn step(&mut self) {
+    fn burn_one_step(&mut self) {
         let old_forest = self.clone();
 
         for (r, c) in old_forest.pixels_currently_on_fire() {
@@ -148,4 +143,13 @@ fn nbrs(r: isize, c: isize) -> Vec<(isize, isize)> {
     }
 
     out
+}
+
+fn clear() {
+    // println!();
+    // println!();
+    // println!();
+    let esc = 27 as char;
+    print!("{esc}[2J{esc}[1;1H");
+    print!("{esc}[2J");
 }
